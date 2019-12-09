@@ -21,14 +21,22 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 import java.util.HashMap;
 import java.util.Map;
 
+//Merger 接口，提供接口方法，将对象数组合并成一个对象
 public class MapMerger implements Merger<Map<?, ?>> {
 
+    /**
+     * 合并 T 数组，返回合并后的 T 对象
+     *
+     * @param items T 数组
+     * @return T 对象
+     */
     @Override
     public Map<?, ?> merge(Map<?, ?>... items) {
         if (items.length == 0) {
             return null;
         }
         Map<Object, Object> result = new HashMap<Object, Object>();
+        // 合并多个 Map
         for (Map<?, ?> item : items) {
             if (item != null) {
                 result.putAll(item);

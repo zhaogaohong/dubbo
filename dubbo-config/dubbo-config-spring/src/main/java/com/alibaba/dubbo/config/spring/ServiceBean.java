@@ -118,8 +118,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     @Override
     @SuppressWarnings({"unchecked", "deprecation"})
+    //初始化一些变量
     public void afterPropertiesSet() throws Exception {
         if (getProvider() == null) {
+            //beansOfTypeIncludingAncestors  获取这个上下文所有指定class的Bean
             Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, false, false);
             if (providerConfigMap != null && providerConfigMap.size() > 0) {
                 Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
@@ -244,6 +246,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
         if (!isDelay()) {
+
             export();
         }
     }

@@ -129,12 +129,14 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             logger.warn("Invoker for service " + this + " on consumer " + NetUtils.getLocalHost() + " is destroyed, "
                     + ", dubbo version is " + Version.getVersion() + ", this invoker should not be used any longer");
         }
-
+        // 设置 `invoker` 属性
         RpcInvocation invocation = (RpcInvocation) inv;
         invocation.setInvoker(this);
+        // 添加公用的隐式传参，例如，`path` `interface` 等等，详见 RpcInvocation 类。
         if (attachment != null && attachment.size() > 0) {
             invocation.addAttachmentsIfAbsent(attachment);
         }
+        // 添加自定义的隐士传参
         Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
         if (contextAttachments != null && contextAttachments.size() != 0) {
             /**
@@ -145,6 +147,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              */
             invocation.addAttachments(contextAttachments);
         }
+        // 设置 `async=true` ，若为异步方法
         if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) {
             invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
         }
@@ -152,6 +155,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
 
 
         try {
+            // 执行调用
             return doInvoke(invocation);
         } catch (InvocationTargetException e) { // biz exception
             Throwable te = e.getTargetException();

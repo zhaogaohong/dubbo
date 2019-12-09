@@ -42,8 +42,9 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     private static final String CHANNEL_KEY = HeaderExchangeChannel.class.getName() + ".CHANNEL";
 
+    //通道
     private final Channel channel;
-
+    //是否关闭
     private volatile boolean closed = false;
 
     HeaderExchangeChannel(Channel channel) {
@@ -109,15 +110,17 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         // create request.
         Request req = new Request();
         req.setVersion(Version.getProtocolVersion());
-        req.setTwoWay(true);
+        req.setTwoWay(true); // 需要响应
         req.setData(request);
+        // 创建 DefaultFuture 对象
         DefaultFuture future = new DefaultFuture(channel, req, timeout);
-        try {
+        try { // 发送请求
             channel.send(req);
         } catch (RemotingException e) {
-            future.cancel();
+            future.cancel();// 发生异常，取消 DefaultFuture
             throw e;
         }
+        // 返回 DefaultFuture 对象
         return future;
     }
 
@@ -142,6 +145,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             return;
         }
         closed = true;
+        // 等待请求完成
         if (timeout > 0) {
             long start = System.currentTimeMillis();
             while (DefaultFuture.hasFuture(channel)
@@ -153,6 +157,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
                 }
             }
         }
+        // 关闭通道
         close();
     }
 

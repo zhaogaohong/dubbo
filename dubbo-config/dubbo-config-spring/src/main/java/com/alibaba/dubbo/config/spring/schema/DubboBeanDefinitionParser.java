@@ -113,6 +113,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     }
                 }
             }
+            //把一个interface映射到了一个可实例化的class，而且还是运行时bean的名字,所以我看了这个ref的解析实现，这个解析主要有两个:
+            //如果用了class标签，spring会生成相应的class的BeanDefinition,并创建了一个BeanDefinitionHolder来代表运行时的bean,并且这个bean的名字是id+Impl
         } else if (ServiceBean.class.equals(beanClass)) {
             String className = element.getAttribute("class");
             if (className != null && className.length() > 0) {
@@ -216,6 +218,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                     reference = new RuntimeBeanReference(invokeRef);
                                     beanDefinition.getPropertyValues().addPropertyValue("oninvokeMethod", invokeRefMethod);
                                 } else {
+                                   // 写ref，不写class。如果有ref,就用RuntimeBeanReference作为创建时的bean。
                                     if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
                                         BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
                                         if (!refBean.isSingleton()) {

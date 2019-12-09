@@ -26,7 +26,7 @@ import java.util.Random;
 
 /**
  * LeastActiveLoadBalance
- *
+ *实现 AbstractLoadBalance 抽象类，最少活跃调用数，相同活跃数的随机，活跃数指调用前后计数差。
  */
 public class LeastActiveLoadBalance extends AbstractLoadBalance {
 
@@ -36,21 +36,22 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        int length = invokers.size(); // Number of invokers
-        int leastActive = -1; // The least active value of all invokers
-        int leastCount = 0; // The number of invokers having the same least active value (leastActive)
-        int[] leastIndexs = new int[length]; // The index of invokers having the same least active value (leastActive)
-        int totalWeight = 0; // The sum of with warmup weights
-        int firstWeight = 0; // Initial value, used for comparision
-        boolean sameWeight = true; // Every invoker has the same weight value?
+        int length = invokers.size(); // // 总个数
+        int leastActive = -1; // 最小的活跃数
+        int leastCount = 0; // 相同最小活跃数的个数
+        int[] leastIndexs = new int[length]; // 相同最小活跃数的下标
+        int totalWeight = 0; // 总权重
+        int firstWeight = 0; // 第一个权重，用于于计算是否相同
+        boolean sameWeight = true; // 是否所有权重相同
+        // 计算获得相同最小活跃数的数组和个数
         for (int i = 0; i < length; i++) {
             Invoker<T> invoker = invokers.get(i);
-            int active = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName()).getActive(); // Active number
+            int active = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName()).getActive(); // // 活跃数
             int afterWarmup = getWeight(invoker, invocation); // Weight
-            if (leastActive == -1 || active < leastActive) { // Restart, when find a invoker having smaller least active value.
-                leastActive = active; // Record the current least active value
-                leastCount = 1; // Reset leastCount, count again based on current leastCount
-                leastIndexs[0] = i; // Reset
+            if (leastActive == -1 || active < leastActive) { // 发现更小的活跃数，重新开始
+                leastActive = active; //记录最小活跃数
+                leastCount = 1; // 重新统计相同最小活跃数的个数
+                leastIndexs[0] = i; // 重新记录最小活跃数下标
                 totalWeight = afterWarmup; // Reset
                 firstWeight = afterWarmup; // Record the weight the first invoker
                 sameWeight = true; // Reset, every invoker has the same weight value?

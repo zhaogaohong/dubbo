@@ -33,10 +33,11 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * ConsistentHashLoadBalance
- *
+ *实现 AbstractLoadBalance 抽象类，一致性 Hash，相同参数的请求总是发到同一提供者
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
+    //服务方法与一致性哈希选择器的映射
     private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
 
     @SuppressWarnings("unchecked")
@@ -44,7 +45,9 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String methodName = RpcUtils.getMethodName(invocation);
         String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
+        // 基于 invokers 集合，根据对象内存地址来计算定义哈希值
         int identityHashCode = System.identityHashCode(invokers);
+        // 获得 ConsistentHashSelector 对象。若为空，或者定义哈希值变更（说明 invokers 集合发生变化），进行创建新的 ConsistentHashSelector 对象
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
         if (selector == null || selector.identityHashCode != identityHashCode) {
             selectors.put(key, new ConsistentHashSelector<T>(invokers, methodName, identityHashCode));
@@ -75,9 +78,11 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             }
             for (Invoker<T> invoker : invokers) {
                 String address = invoker.getUrl().getAddress();
+                // Md5是一个16字节长度的数组，将16字节的数组每四个字节一组，分别对应一个虚拟结点，这就是为什么上面把虚拟结点四个划分一组的原因
                 for (int i = 0; i < replicaNumber / 4; i++) {
                     byte[] digest = md5(address + i);
                     for (int h = 0; h < 4; h++) {
+                        // 对于每四个字节，组成一个long值数值，做为这个虚拟节点的在环中的惟一key
                         long m = hash(digest, h);
                         virtualInvokers.put(m, invoker);
                     }
@@ -87,7 +92,9 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
         public Invoker<T> select(Invocation invocation) {
             String key = toKey(invocation.getArguments());
+            // 计算 MD5 值
             byte[] digest = md5(key);
+            // 计算 KEY 值
             return selectForKey(hash(digest, 0));
         }
 
@@ -102,7 +109,9 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         private Invoker<T> selectForKey(long hash) {
+            // 得到大于当前 key 的那个子 Map ，然后从中取出第一个 key ，就是大于且离它最近的那个 key
             Map.Entry<Long, Invoker<T>> entry = virtualInvokers.tailMap(hash, true).firstEntry();
+            // 不存在，则取 virtualInvokers 第一个
             if (entry == null) {
                 entry = virtualInvokers.firstEntry();
             }

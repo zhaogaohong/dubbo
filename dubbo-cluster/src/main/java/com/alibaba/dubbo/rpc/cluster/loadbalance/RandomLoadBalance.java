@@ -38,18 +38,22 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         int length = invokers.size(); // Number of invokers
         int totalWeight = 0; // The sum of weights
         boolean sameWeight = true; // Every invoker has the same weight?
+        // 计算总权限
         for (int i = 0; i < length; i++) {
             int weight = getWeight(invokers.get(i), invocation);
+            // 获得权重
             totalWeight += weight; // Sum
             if (sameWeight && i > 0
                     && weight != getWeight(invokers.get(i - 1), invocation)) {
                 sameWeight = false;
             }
-        }
+        } // 权重不相等，随机后，判断在哪个 Invoker 的权重区间中
         if (totalWeight > 0 && !sameWeight) {
+            // 随机
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
             int offset = random.nextInt(totalWeight);
             // Return a invoker based on the random value.
+            // 区间判断
             for (int i = 0; i < length; i++) {
                 offset -= getWeight(invokers.get(i), invocation);
                 if (offset < 0) {
@@ -58,6 +62,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             }
         }
         // If all invokers have the same weight value or totalWeight=0, return evenly.
+        // 权重相等，平均随机
         return invokers.get(random.nextInt(length));
     }
 

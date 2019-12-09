@@ -47,7 +47,7 @@ import java.util.concurrent.TimeoutException;
 public class RpcContext {
 
     /**
-     * use internal thread local to improve performance
+     * RpcContext 线程变量
      */
     private static final InternalThreadLocal<RpcContext> LOCAL = new InternalThreadLocal<RpcContext>() {
         @Override
@@ -61,28 +61,33 @@ public class RpcContext {
             return new RpcContext();
         }
     };
-
+    // 隐式参数集合
     private final Map<String, String> attachments = new HashMap<String, String>();
+    // 实际未使用
     private final Map<String, Object> values = new HashMap<String, Object>();
+    //异步调用 Future
     private Future<?> future;
-
+    //可调用服务的 URL 对象集合
     private List<URL> urls;
-
+    //调用服务的 URL 对象
     private URL url;
-
+    //方法名
     private String methodName;
-
+    //参数类型数组
     private Class<?>[] parameterTypes;
-
+    //参数值数组
     private Object[] arguments;
-
+    //服务消费者地址
     private InetSocketAddress localAddress;
-
+    //服务提供者地址
     private InetSocketAddress remoteAddress;
+    // DUBBO-325 废弃的，使用 urls 属性替代
     @Deprecated
     private List<Invoker<?>> invokers;
+    // DUBBO-325 废弃的，使用 url 属性替代
     @Deprecated
     private Invoker<?> invoker;
+    // DUBBO-325 废弃的，使用 methodName、parameterTypes、arguments 属性替代
     @Deprecated
     private Invocation invocation;
 
