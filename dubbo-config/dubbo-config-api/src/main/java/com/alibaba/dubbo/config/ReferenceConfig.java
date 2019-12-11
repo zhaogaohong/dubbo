@@ -340,23 +340,32 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         URL tmpUrl = new URL("temp", "localhost", 0, map);
-        // 【省略代码】是否本地引用
+        // 是否本地引用
         final boolean isJvmRefer;
+        // injvm 属性为空，不通过该属性判断
         if (isInjvm() == null) {
+            // 直连服务提供者，参见文档《直连提供者》http://dubbo.apache.org/zh-cn/docs/user/demos/explicit-target.html
             if (url != null && url.length() > 0) { // if a url is specified, don't do local reference
                 isJvmRefer = false;
+                // 通过 `tmpUrl` 判断，是否需要本地引用
+//                <dubbo:reference protocol="injvm" ></dubbo:reference>
             } else if (InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl)) {
                 // by default, reference local service if there is
                 isJvmRefer = true;
             } else {
+                // 默认不是
                 isJvmRefer = false;
             }
         } else {
+            // 通过 injvm 属性。
             isJvmRefer = isInjvm().booleanValue();
         }
-        // 【省略代码】本地引用
+        // 本地引用
         if (isJvmRefer) {
+            // 创建服务引用 URL 对象
             URL url = new URL(Constants.LOCAL_PROTOCOL, NetUtils.LOCALHOST, 0, interfaceClass.getName()).addParameters(map);
+            // 引用服务，返回 Invoker 对象 ProtocolFilterWrapper.refer  ProtocolListenerWrapper.refer
+
             invoker = refprotocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
@@ -414,6 +423,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 URL registryURL = null;
                 for (URL url : urls) {
                     // 引用服务
+//                    此处 Dubbo SPI 自适应的特性的好处就出来了，可以自动根据 URL 参数，获得对应的拓展实现。例如，invoker 传入后，根据 invoker.url 自动获得对应 Protocol 拓展实现为 DubboProtocol 。
+//                    实际上，Protocol 有两个 Wrapper 拓展实现类： ProtocolFilterWrapper、ProtocolListenerWrapper 。所以，#export(...) 方法的调用顺序是：
+//                    Protocol$Adaptive => ProtocolFilterWrapper => ProtocolListenerWrapper => RegistryProtocol =>
+//                    Protocol$Adaptive => ProtocolFilterWrapper => ProtocolListenerWrapper => DubboProtocol
+//                    也就是说，这一条大的调用链，包含两条小的调用链。原因是：
+//                    首先，传入的是注册中心的 URL ，通过 Protocol$Adaptive 获取到的是 RegistryProtocol 对象。
+//                    其次，RegistryProtocol 会在其 #refer(...) 方法中，使用服务提供者的 URL ( 即注册中心的 URL 的 refer 参数值)，再次调用 Protocol$Adaptive 获取到的是 DubboProtocol 对象，进行服务暴露。
+//                    为什么是这样的顺序？通过这样的顺序，可以实现类似 AOP 的效果，在获取服务提供者列表后，再创建连接服务提供者的客户端
                     invokers.add(refprotocol.refer(interfaceClass, url));
                     // 使用最后一个注册中心的 URL
                     if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
@@ -446,7 +463,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (logger.isInfoEnabled()) {
             logger.info("Refer dubbo service " + interfaceClass.getName() + " from url " + invoker.getUrl());
         }
-        //  // 创建 Service 代理对象
+        //创建 Service 代理对象
         return (T) proxyFactory.getProxy(invoker);
     }
 
