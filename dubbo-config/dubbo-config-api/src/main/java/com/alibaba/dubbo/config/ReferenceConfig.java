@@ -392,8 +392,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                             urls.add(ClusterUtils.mergeUrl(url, map));
                         }
                     }
-                }    // 注册中心
-            } else { // assemble URL from register center's configuration
+                }
+            } else {
                 // 加载注册中心 URL 数组
                 List<URL> us = loadRegistries(false);
                 // 循环数组，添加到 `url` 中。

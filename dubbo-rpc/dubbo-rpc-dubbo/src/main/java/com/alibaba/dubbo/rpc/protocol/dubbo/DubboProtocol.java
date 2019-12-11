@@ -446,8 +446,7 @@ public class DubboProtocol extends AbstractProtocol {
         // 连接服务器，创建客户端
         ExchangeClient client;
         try {
-            // 懒连接，创建 LazyConnectExchangeClient 对象
-            // connection should be lazy
+            // 懒连接，创建 LazyConnectExchangeClient对象
             if (url.getParameter(Constants.LAZY_CONNECT_KEY, false)) {
                 client = new LazyConnectExchangeClient(url, requestHandler);
                 // 直接连接，创建 HeaderExchangeClient 对象
