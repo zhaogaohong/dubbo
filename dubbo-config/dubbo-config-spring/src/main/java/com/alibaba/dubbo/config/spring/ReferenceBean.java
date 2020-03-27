@@ -174,6 +174,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             b = getConsumer().isInit();
         }
         if (b != null && b.booleanValue()) {
+            //根据配置 获取服务
             getObject();
         }
     }

@@ -120,6 +120,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     @SuppressWarnings({"unchecked", "deprecation"})
     //初始化一些变量
     public void afterPropertiesSet() throws Exception {
+        //设置provider
         if (getProvider() == null) {
             //beansOfTypeIncludingAncestors  获取这个上下文所有指定class的Bean
             Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, false, false);
@@ -152,6 +153,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
+        //设置Application
         if (getApplication() == null
                 && (getProvider() == null || getProvider().getApplication() == null)) {
             Map<String, ApplicationConfig> applicationConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class, false, false);
@@ -170,6 +172,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
+        //设置Module
         if (getModule() == null
                 && (getProvider() == null || getProvider().getModule() == null)) {
             Map<String, ModuleConfig> moduleConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ModuleConfig.class, false, false);
@@ -188,6 +191,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
+       //设置注册信息
         if ((getRegistries() == null || getRegistries().isEmpty())
                 && (getProvider() == null || getProvider().getRegistries() == null || getProvider().getRegistries().isEmpty())
                 && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().isEmpty())) {
@@ -204,6 +208,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
+        //设置监控
         if (getMonitor() == null
                 && (getProvider() == null || getProvider().getMonitor() == null)
                 && (getApplication() == null || getApplication().getMonitor() == null)) {
@@ -223,6 +228,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
+        //设置通信协议
         if ((getProtocols() == null || getProtocols().isEmpty())
                 && (getProvider() == null || getProvider().getProtocols() == null || getProvider().getProtocols().isEmpty())) {
             Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
@@ -246,7 +252,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
         if (!isDelay()) {
-
+            //暴露服务
             export();
         }
     }
@@ -266,8 +272,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
      */
     @Override
     public void export() {
+        //服务暴露
         super.export();
         // Publish ServiceBeanExportedEvent
+        //事件发布
         publishExportEvent();
     }
 

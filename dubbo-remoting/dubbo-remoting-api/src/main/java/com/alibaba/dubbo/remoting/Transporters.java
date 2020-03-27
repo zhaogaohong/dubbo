@@ -53,6 +53,7 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        //获取SPI 用extensionLoader加载
         return getTransporter().bind(url, handler);
     }
 

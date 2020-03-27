@@ -234,7 +234,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         if (contextAttachments != null && contextAttachments.size() != 0) {
             ((RpcInvocation) invocation).addAttachments(contextAttachments);
         }
-
+        //负载均衡策略 SPI
         List<Invoker<T>> invokers = list(invocation);
         if (invokers != null && !invokers.isEmpty()) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()

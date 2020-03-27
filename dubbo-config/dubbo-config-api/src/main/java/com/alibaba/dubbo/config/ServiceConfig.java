@@ -196,16 +196,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public synchronized void export() {
         if (provider != null) {
             if (export == null) {
+                //同步暴露状态
                 export = provider.getExport();
             }
             if (delay == null) {
+                //同步延迟状态
                 delay = provider.getDelay();
             }
         }
         if (export != null && !export) {
             return;
         }
-
+        //延迟暴露
         if (delay != null && delay > 0) {
             delayExportExecutor.schedule(new Runnable() {
                 @Override
@@ -218,10 +220,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
+    //暴露动作加锁
     protected synchronized void doExport() {
         if (unexported) {
             throw new IllegalStateException("Already unexported!");
         }
+        //判断是否已经暴露
         if (exported) {
             return;
         }
@@ -230,6 +234,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
         }
         checkDefault();
+        //从ProviderConfig中读取 application module registries monitor protocols
         if (provider != null) {
             if (application == null) {
                 application = provider.getApplication();
@@ -479,11 +484,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if ((contextPath == null || contextPath.length() == 0) && provider != null) {
             contextPath = provider.getContextpath();
         }
-
+        //封装URL 主机 端口 服务路径 参数
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 
+        //判断是否有SPI 扩展 如果有重新封装URL
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                 .hasExtension(url.getProtocol())) {
             url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
@@ -493,7 +499,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         String scope = url.getParameter(Constants.SCOPE_KEY);
         // don't export when none is configured
         if (!Constants.SCOPE_NONE.toString().equalsIgnoreCase(scope)) {
-
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!Constants.SCOPE_REMOTE.toString().equalsIgnoreCase(scope)) {
                 //本地暴露服务
