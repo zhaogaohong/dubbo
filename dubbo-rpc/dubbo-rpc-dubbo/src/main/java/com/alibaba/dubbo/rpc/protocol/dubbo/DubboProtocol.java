@@ -355,7 +355,7 @@ public class DubboProtocol extends AbstractProtocol {
         optimizeSerialization(url);
         // 获得远程通信客户端数组
        // 创建 DubboInvoker 对象
-        // create rpc invoker.
+        // create rpc invoker. 接口  url  连接netty
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
         // 添加到 `invokers`
         invokers.add(invoker);

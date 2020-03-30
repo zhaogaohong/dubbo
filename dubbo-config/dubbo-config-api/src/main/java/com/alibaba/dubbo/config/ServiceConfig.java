@@ -527,11 +527,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (StringUtils.isNotEmpty(proxy)) {
                             registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
                         }
-                        //1.使用 ProxyFactory 创建 Invoker 对象
+                        //1.使用 ProxyFactory 创建 Invoker 对象 生成接口 与对应的URL
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         // 创建 DelegateProviderMetaDataInvoker 对象 该对象在 Invoker 对象的基础上，增加了当前服务提供者 ServiceConfig 对象
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-                        // 使用 Protocol 暴露 Invoker 对象
+                        // 使用 Protocol 暴露 Invoker 对象 netty启动
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         // 添加到 `exporters`
                         exporters.add(exporter);
